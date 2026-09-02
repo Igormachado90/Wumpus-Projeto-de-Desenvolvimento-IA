@@ -1,0 +1,304 @@
+.mapa-widget {
+  padding: 16px;
+  background: var(--panel);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mapa-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mapa-title {
+  font-family: var(--font-title);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cyan);
+  letter-spacing: 1.5px;
+}
+
+.mapa-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.mapa-btn {
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mapa-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mapa-btn-primary {
+  background: var(--danger);
+  border: none;
+  color: #fff;
+}
+
+.mapa-btn-primary:hover {
+  background: #ff2050;
+}
+
+.mapa-imagem-container {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.mapa-cena {
+  position: relative;
+  display: block;
+  width: min(100%, 600px);
+  max-height: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+.mapa-chao {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  image-rendering: pixelated;
+}
+
+.mapa-objeto {
+  position: absolute;
+  pointer-events: none;
+  top: 50%;
+  left: 50%;
+  image-rendering: pixelated;
+}
+
+.mapa-agente {
+  width: 190px;
+  z-index: 20;
+  top: 63%;
+  transform: translate(-50%, -80%);
+  filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.6));
+  transition: transform 0.2s ease-in-out;
+}
+
+.mapa-wumpus {
+  width: clamp(45px, 23%, 150px);
+  z-index: 10;
+  transform: translate(-50%, -85%);
+  top: 65%;
+}
+
+.mapa-poco {
+  width: clamp(50px, 20%, 150px);
+  z-index: 10;
+  transform: translate(-50%, -65%);
+  top: 65%;
+}
+
+.mapa-ouro {
+  width: clamp(40px, 25%, 150px);
+  z-index: 10;
+  transform: translate(-50%, -55%);
+  top: 80%;
+}
+
+.mapa-brisa {
+  width: clamp(40px, 25%, 150px);
+  z-index: 12;
+  top: 31%;
+  left: 25%;
+  transform: translate(0, 0);
+  opacity: 0.8;
+}
+
+.mapa-fedor {
+  width: clamp(40px, 25%, 150px);
+  z-index: 12;
+  top: 50%;
+  left: 49%;
+  transform: translate(0, 0);
+  opacity: 0.8;
+  /* animation: flutuacao 3s ease-in-out infinite; */
+}
+
+@keyframes flutuacao {
+  0% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: translateY(-10px) scale(1.05);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.8;
+  }
+}
+
+.mapa-grid-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+.mapa-grid {
+  display: grid;
+  gap: 2px;
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+}
+
+.mapa-cell {
+  width: 25px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: 1px solid;
+  transition: all 0.3s ease;
+}
+
+.mapa-cell-agente {
+  box-shadow: 0 0 20px 5px rgba(0, 212, 255, 0.3);
+}
+
+/* =========================================
+   AJUSTES ESPECÍFICOS PARA TABLET (600px - 901px)
+   ========================================= */
+@media (min-width: 601px) and (max-width: 901px) {
+
+  .mapa-cena {
+    width: min(95%, 460px);
+  }
+
+  .mapa-agente {
+    width: 120px;
+    transform: translate(-50%, -80%);
+  }
+
+  .mapa-wumpus {
+    width: 50px;
+    top: 38%;
+    transform: translate(-50%, -85%);
+  }
+
+  .mapa-poco {
+    width: 60px;
+    top: 55%;
+    transform: translate(-50%, -65%);
+  }
+
+  .mapa-ouro {
+    width: 30px;
+    top: 58%;
+    transform: translate(-50%, -55%);
+  }
+
+  .mapa-brisa {
+    width: 45px;
+    top: 28%;
+    left: 50%;
+  }
+
+  .mapa-fedor {
+    width: 24px;
+    top: 60%;
+    left: 70%;
+  }
+}
+
+/* =========================================
+   AJUSTES PARA MOBILE (até 600px)
+   ========================================= */
+@media (max-width: 600px) {
+  .mapa-widget {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .mapa-title {
+    font-size: 12px;
+  }
+
+  .mapa-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .mapa-btn {
+    min-width: 0;
+    padding: 8px 4px;
+    font-size: 10px;
+  }
+
+  .mapa-imagem-container {
+    min-height: auto;
+  }
+
+  .mapa-cena {
+    width: 100%;
+    max-width: 400px;
+  }
+
+  /* No mobile os itens também ficam menores para caber bem */
+  .mapa-agente {
+    width: 34px;
+  }
+
+  .mapa-wumpus {
+    width: 42px;
+    top: 38%;
+  }
+
+  .mapa-poco {
+    width: 50px;
+    top: 55%;
+  }
+
+  .mapa-ouro {
+    width: 26px;
+    top: 58%;
+  }
+
+  .mapa-brisa,
+  .mapa-fedor {
+    width: 20px;
+  }
+}

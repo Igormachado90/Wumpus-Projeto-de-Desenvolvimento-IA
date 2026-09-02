@@ -1,0 +1,40 @@
+{
+  "mapas_isometricos": {
+    "norte": {
+      "direcao": "norte",
+      "descricao": "Visão do mapa quando o agente se move para norte",
+      "perspectivas": {
+        "esquerda_frente": "norte/mapa_esquerda_frente.png",
+        "frente": "norte/mapa_frente.png",
+        "frente_direita": "norte/mapa_frente_direita.png"
+      }
+    },
+    "sul": {
+      "direcao": "sul",
+      "descricao": "Visão do mapa quando o agente se move para sul",
+      "perspectivas": {
+        "esquerda_frente": "sul/mapa_esquerda_frente.png",
+        "frente": "sul/mapa_frente.png",
+        "frente_direita": "sul/mapa_frente_direita.png"
+      }
+    },
+    "leste": {
+      "direcao": "leste",
+      "descricao": "Visão do mapa quando o agente se move para leste",
+      "perspectivas": {
+        "esquerda_frente": "leste/mapa_esquerda_frente.png",
+        "frente": "leste/mapa_frente.png",
+        "frente_direita": "leste/mapa_frente_direita.png"
+      }
+    },
+    "oeste": {
+      "direcao": "oeste",
+      "descricao": "Visão do mapa quando o agente se move para oeste",
+      "perspectivas": {
+        "esquerda_frente": "oeste/mapa_esquerda_frente.png",
+        "frente": "oeste/mapa_frente.png",
+        "frente_direita": "oeste/mapa_frente_direita.png"
+      }
+    }
+  }
+}

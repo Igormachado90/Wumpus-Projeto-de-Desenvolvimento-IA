@@ -1,0 +1,214 @@
+.tela-inicial {
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  background: #050609;
+  color: var(--text);
+}
+
+.tela-inicial::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent);
+}
+
+.tela-logo {
+  position: relative;
+  z-index: 1;
+  width: min(74vw, 430px);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 24px rgba(0, 212, 255, 0.12));
+}
+
+.tela-logo-pequeno {
+  width: min(52vw, 280px);
+  margin-bottom: 28px;
+}
+
+.menu-brilho {
+  position: absolute;
+  width: min(80vw, 560px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.1), transparent 65%);
+  filter: blur(12px);
+}
+
+.menu-acoes,
+.painel-inicial {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 320px);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.menu-acoes {
+  margin-top: 42px;
+}
+
+.eyebrow,
+.menu-versao,
+.transicao-kicker {
+  font-family: var(--font-title);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+}
+
+.botao-inicial,
+.tamanho-btn {
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text);
+  min-height: 48px;
+  padding: 12px 18px;
+  font-family: var(--font-title);
+  font-size: 11px;
+  letter-spacing: 1px;
+  transition: 180ms ease;
+}
+
+.botao-inicial:hover,
+.tamanho-btn:hover,
+.tamanho-btn.selecionado {
+  border-color: var(--cyan);
+  background: rgba(0, 212, 255, 0.12);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.botao-principal {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+
+.botao-principal:hover {
+  background: #ff2050;
+  border-color: #ff2050;
+}
+
+.botao-link {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 8px;
+  font-family: var(--font-body);
+  font-size: 12px;
+}
+
+.botao-link:hover {
+  color: var(--cyan);
+}
+
+.menu-versao {
+  position: absolute;
+  bottom: 24px;
+}
+
+.painel-inicial {
+  padding: 26px;
+  border: 1px solid var(--border);
+  background: rgba(20, 20, 30, 0.88);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+}
+
+.painel-inicial h1,
+.tela-transicao h1 {
+  margin: 0 0 22px;
+  font-family: var(--font-title);
+  font-size: clamp(20px, 5vw, 28px);
+  text-align: center;
+  color: #fff;
+}
+
+.config-label {
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.tamanho-opcoes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.tamanho-btn {
+  min-height: 40px;
+  padding: 8px 4px;
+  font-size: 10px;
+}
+
+.tela-transicao {
+  gap: 14px;
+}
+
+.tela-logo-transicao {
+  width: min(46vw, 250px);
+  animation: entrada-logo 1.5s ease both;
+}
+
+.tela-transicao h1 {
+  margin: 0;
+}
+
+.transicao-kicker {
+  margin: 8px 0 0;
+  color: var(--cyan);
+}
+
+.transicao-loader {
+  width: 150px;
+  height: 2px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.transicao-loader::after {
+  content: '';
+  display: block;
+  width: 45%;
+  height: 100%;
+  background: var(--danger);
+  animation: carregando 1.5s ease-in-out infinite;
+}
+
+@keyframes entrada-logo {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes carregando {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(330%); }
+}
+
+@media (max-width: 480px) {
+  .tela-inicial { padding: 24px 16px; }
+  .tela-logo { width: min(86vw, 370px); }
+  .menu-acoes { margin-top: 30px; }
+  .painel-inicial { padding: 22px 18px; }
+}

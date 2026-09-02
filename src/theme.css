@@ -1,0 +1,50 @@
+:root {
+  --bg: #0a0a0f;
+  --panel: #14141e;
+  --border: rgba(0, 212, 255, 0.3);
+  --border-soft: rgba(255, 255, 255, 0.08);
+  --cyan: #00d4ff;
+  --danger: #ff0040;
+  --success: #00ff41;
+  --success-2: #00b894;
+  --gold: #ffd700;
+  --muted: #8888aa;
+  --text: #e0e0e0;
+  --font-title: 'Orbitron', sans-serif;
+  --font-body: 'Rajdhani', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 255, 0.25);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}

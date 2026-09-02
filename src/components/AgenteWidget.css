@@ -1,0 +1,27 @@
+.agente-widget {
+  padding: 14px;
+  background: var(--panel);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
+  gap: 12px;
+}
+
+.agente-widget-title {
+  display: block;
+  font-family: var(--font-title);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cyan);
+  letter-spacing: 1.5px;
+  margin-bottom: 10px;
+}
+
+.agente-widget-grid {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}

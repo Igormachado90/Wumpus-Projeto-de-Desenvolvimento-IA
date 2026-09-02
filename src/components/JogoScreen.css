@@ -1,0 +1,330 @@
+.jogo-screen {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--bg);
+  box-sizing: border-box;
+}
+
+.jogo-screen-inner {
+  width: 100%;
+  height: 100vh;
+  padding: 16px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   DESKTOP
+   ========================================================= */
+
+.desktop-layout {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+
+/* Área principal abaixo do Header */
+.desktop {
+  flex: 1;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: row;
+
+  gap: 12px;
+  min-width: 0;
+}
+
+
+/* =========================================================
+   COLUNA ESQUERDA
+   ========================================================= */
+
+.desktop-left {
+  flex: 2;
+  min-width: 0;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+
+/* Parte superior esquerda */
+.desktop-top {
+  flex: 1;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: row;
+
+  gap: 12px;
+}
+
+
+/* Agente */
+.desktop-top-left {
+  flex: 0 0 280px;
+  min-width: 0;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+
+/* Mapa */
+.desktop-mapa-right {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+
+  overflow: hidden;
+
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   ÁREA INFERIOR DA ESQUERDA
+   ========================================================= */
+
+.desktop-mapa-imagem-botton {
+  flex: 0 0 150px;
+  min-height: 200px;
+
+  background: var(--panel);
+
+  border: 1px solid var(--border);
+  border-radius: 12px;
+
+  box-sizing: border-box;
+  
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+
+  padding: 14px;
+  gap: 11px;
+}
+
+.desktop-mapa-imagem-botton > * {
+  min-width: 0;
+  min-height: 0;
+}
+
+
+/* =========================================================
+   COLUNA DIREITA
+   ========================================================= */
+
+.desktop-right {
+  flex: 1;
+  min-width: 280px;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+
+/* Status + Controle */
+.desktop-side {
+  /* flex: 1; */
+  /* height: 100%; */
+  width: 23%;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+
+  min-height: 0;
+}
+
+
+/* Status */
+.desktop-side > :first-child {
+  flex: 0 0 auto;
+}
+
+
+/* Painel de controle */
+.desktop-painel {
+  flex: 1;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================================================
+   AGENTE
+   ========================================================= */
+
+.desktop-agente {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  min-height: 0;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+.mobile-layout {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+
+  padding-bottom: 24px;
+
+  box-sizing: border-box;
+
+  overflow-y: auto;
+}
+
+
+/* Log */
+.mobile-log {
+  width: 100%;
+  height: 120px;
+  min-height: 120px;
+}
+
+
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
+/* Tablet: keeps the side controls visible without squeezing the map. */
+@media (min-width: 901px) and (max-width: 1199px) {
+
+  .jogo-screen-inner {
+    padding: 12px;
+  }
+
+  .desktop {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    align-items: stretch;
+  }
+
+  .desktop-left {
+    min-width: 0;
+  }
+
+  .desktop-top {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+
+  .desktop-top-left {
+    flex: none;
+  }
+
+  .desktop-mapa-right {
+    min-width: 0;
+    padding: 8px;
+  }
+
+  .desktop-mapa-imagem-botton {
+    flex-basis: 170px;
+    padding: 10px;
+  }
+
+  .desktop-side {
+    width: auto;
+  }
+}
+
+/* Tablet menor: a composição mobile ganha duas colunas para reduzir rolagem. */
+@media (min-width: 601px) and (max-width: 900px) {
+
+  .jogo-screen-inner {
+    height: auto;
+    min-height: 100vh;
+    padding: 12px;
+    overflow: visible;
+  }
+
+  .mobile-layout {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  .mobile-layout > :first-child,
+  .mobile-layout > :nth-child(2),
+  .mobile-layout > :nth-child(3),
+  .mobile-layout > :nth-child(4) {
+    grid-column: 1 / -1;
+  }
+
+  .mobile-layout > :nth-child(2) {
+    min-height: min(62vw, 520px);
+  }
+
+  .mobile-log,
+  .mobile-layout > :last-child {
+    min-width: 0;
+  }
+}
+
+/* Smartphone: uma coluna, controles e textos podem quebrar sem overflow. */
+@media (max-width: 600px) {
+
+  .jogo-screen-inner {
+    height: auto;
+    min-height: 100vh;
+    padding: 8px;
+    overflow: visible;
+  }
+
+  .mobile-layout {
+    gap: 10px;
+  }
+
+  .mobile-layout > :nth-child(2) {
+    min-height: min(100vw, 430px);
+  }
+
+  .mobile-log {
+    height: 150px;
+    min-height: 150px;
+  }
+}
+
+@media (max-width: 360px) {
+
+  .mobile-layout > :nth-child(2) {
+    min-height: 300px;
+  }
+}
