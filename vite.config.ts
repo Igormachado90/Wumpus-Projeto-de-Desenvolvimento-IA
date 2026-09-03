@@ -5,4 +5,14 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: '/Wumpus-Projeto-de-Desenvolvimento-IA/',
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+    assetsDir: 'assets',
+    copyPublicDir: true,
+  },
+  publicDir: 'public',
 })
