@@ -47,7 +47,7 @@ export function TelaInicial({ jogo }: Props) {
     return (
       <main className="tela-inicial tela-transicao">
         <div className="transicao-orbita" />
-        <img className="tela-logo tela-logo-transicao" src="/images/logo.png" alt="Wumpus Exterminador" />
+        <img className="tela-logo tela-logo-transicao" src="src/images/logo.png" alt="Wumpus Exterminador" />
         <p className="transicao-kicker">INICIALIZANDO EXPEDIÇÃO</p>
         <h1>{modo === 'ia' ? 'Modo IA' : 'Modo Humilde'}</h1>
         <div className="transicao-loader" aria-label="Carregando" />
@@ -58,7 +58,7 @@ export function TelaInicial({ jogo }: Props) {
   if (tela === 'configuracoes') {
     return (
       <main className="tela-inicial tela-configuracoes">
-        <img className="tela-logo tela-logo-pequeno" src="/images/logo.png" alt="Wumpus Exterminador" />
+        <img className="tela-logo tela-logo-pequeno" src="src/images/logo.png" alt="Wumpus Exterminador" />
         <section className="painel-inicial">
           <p className="eyebrow">PREPARAÇÃO DA EXPEDIÇÃO</p>
           <h1>Configurações</h1>
@@ -84,7 +84,7 @@ export function TelaInicial({ jogo }: Props) {
   return (
     <main className="tela-inicial tela-menu">
       <div className="menu-brilho" />
-      <img className="tela-logo" src="/images/logo.png" alt="Wumpus Exterminador do Futuro" />
+      <img className="tela-logo" src="src/images/logo.png" alt="Wumpus Exterminador do Futuro" />
       <section className="menu-acoes" aria-label="Menu principal">
         <p className="eyebrow">ESCOLHA SUA EXPEDIÇÃO</p>
         <button className="botao-inicial botao-principal" onClick={() => iniciar('humilde')}>Modo Humilde</button>

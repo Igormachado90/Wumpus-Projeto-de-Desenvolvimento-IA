@@ -20,7 +20,7 @@ export function Header({ aoVoltar, jogo }: Props) {
   return (
     <div className="header-bar">
       <div className="header-logo">
-        <img src="/images/logoNome.png" alt="Wumpus Exterminador" />
+        <img src="src/images/logoNome.png" alt="Wumpus Exterminador" />
       </div>
       <div className="header-spacer" >
         <button className="botao-link" onClick={aoVoltar}>Voltar ao menu</button>
