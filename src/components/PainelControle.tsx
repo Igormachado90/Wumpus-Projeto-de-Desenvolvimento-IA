@@ -7,9 +7,9 @@ interface Props {
 }
 
 const AGENTES: { tipo: TipoAgente; nome: string; desc: string; img: string }[] = [
-  { tipo: 'v1', nome: 'V1', desc: 'Reativo', img: 'src/images/v1.jpeg' },
-  { tipo: 'v2', nome: 'V2', desc: 'Memória', img: 'src/images/v2.jpeg' },
-  { tipo: 'v3', nome: 'V3', desc: 'AG', img: 'src/images/v3.jpeg' },
+  { tipo: 'v1', nome: 'V1', desc: 'Reativo', img: './images/v1.jpeg' },
+  { tipo: 'v2', nome: 'V2', desc: 'Memória', img: './images/v2.jpeg' },
+  { tipo: 'v3', nome: 'V3', desc: 'AG', img: './images/v3.jpeg' },
 ];
 
 function corPercepcao(p: string): string {
