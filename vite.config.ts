@@ -6,11 +6,7 @@ export default defineConfig({
   plugins: [react()],
   base: '/Wumpus-Projeto-de-Desenvolvimento-IA/',
   build: {
-    rollupOptions: {
-      output: {
-        manualChunks: undefined,
-      },
-    },
+    outDir: 'dist',
     assetsDir: 'assets',
     copyPublicDir: true,
   },
