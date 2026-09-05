@@ -4,6 +4,7 @@ import {
   CONFIG_RAPIDA,
   curvaMediaV3PorTamanho,
   exportarCSV,
+  exportarCSVFitness,
   resumirPorVersaoETamanho,
   rodarValidacao,
   type ConfigValidacao,
@@ -99,7 +100,19 @@ export function Validacao({ aoVoltar }: Props) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `validacao-wumpus-${Date.now()}.csv`;
+    a.download = `validacao${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function baixarCSVFitness() {
+    if (!resultado) return;
+    const csv = exportarCSVFitness(resultado.curvasV3);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `fitness-medio${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -240,6 +253,7 @@ export function Validacao({ aoVoltar }: Props) {
           <section className="validacao-graficos painel">
             <div className="validacao-resumo-header">
               <h2>V3 — Evolução do fitness por geração (médio das execuções)</h2>
+              <button className="botao-link" onClick={baixarCSVFitness}>Exportar CSV (fitness médio das execuções)</button>
               <div className="tamanho-tabs">
                 {tamanhos.map((t) => (
                   <button

@@ -48,6 +48,8 @@ export interface ExecucaoResultado {
   pontuacao: number;
   pegouOuro: boolean;
   passos: number;
+  fitnessMelhorFinal?: number;
+  fitnessMedioFinal?: number;
   semente?: number;
 }
 
@@ -297,6 +299,8 @@ export async function rodarValidacao(
         pegouOuro: r3.pegouOuro,
         pontuacao: r3.pontuacao,
         passos: r3.passos,
+        fitnessMelhorFinal: r3.historicoMelhor.at(-1),
+        fitnessMedioFinal: r3.historicoMedia.at(-1),
       });
       
       curvasV3.push({
@@ -430,15 +434,29 @@ export function curvaMediaV3PorTamanho(
 }
 
 export function exportarCSV(execucoes: ExecucaoResultado[]): string {
-  const linhas = ['tamanho,versao,execucao,resultado,pegou_ouro,pontuacao,passos'];
+  const linhas = ['tamanho,versao,execucao,resultado,pegou_ouro,pontuacao,passos,fitness_melhor_final,fitness_medio_final'];
   
   for (const e of execucoes) {
     const resultado = e.venceu ? 'venceu' : !e.vivo ? 'morreu' : 'parou';
     linhas.push(
-      `${e.tamanho},${e.versao},${e.execucao},${resultado},${e.pegouOuro ? 1 : 0},${e.pontuacao},${e.passos}`
+      `${e.tamanho},${e.versao},${e.execucao},${resultado},${e.pegouOuro ? 1 : 0},${e.pontuacao},${e.passos},${e.fitnessMelhorFinal ?? ''},${e.fitnessMedioFinal ?? ''}`
     );
   }
   
+  return linhas.join('\n');
+}
+
+export function exportarCSVFitness(curvas: CurvaGeracao[]): string {
+  const tamanhos = Array.from(new Set(curvas.map((curva) => curva.tamanho))).sort((a, b) => a - b);
+  const linhas = ['tamanho,geracao,melhor,media,pior'];
+
+  for (const tamanho of tamanhos) {
+    const curvaMedia = curvaMediaV3PorTamanho(curvas, tamanho);
+    for (const ponto of curvaMedia) {
+      linhas.push(`${tamanho},${ponto.geracao},${ponto.melhor},${ponto.media},${ponto.pior}`);
+    }
+  }
+
   return linhas.join('\n');
 }
 
