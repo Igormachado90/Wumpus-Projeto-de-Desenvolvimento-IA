@@ -35,6 +35,9 @@ export class AgenteReativoV1 {
     this.log = [];
     this.print('🎯 Iniciando Agente Reativo V1...');
     this.print(`📐 Ambiente: ${ambiente.tamanho}x${ambiente.tamanho}`);
+    this.print(`  Quantidade de Poços: ${ambiente.matriz.flat().filter(c => c.poco).length}`);
+    this.print(`  Quantidade de Wumpus: ${ambiente.matriz.flat().filter(c => c.wumpus).length}`);
+    this.print(`\n`);
 
     let guarda = 0;
     while (this.vivo && !this.venceu) {

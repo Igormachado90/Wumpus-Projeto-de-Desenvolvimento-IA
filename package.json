@@ -10,7 +10,9 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "test": "tsx src/test/run_fitness_v3.ts",
+    "test:validacao": "tsx src/test/run_validacao.ts"
   },
   "dependencies": {
     "react": "^19.2.8",
@@ -23,6 +25,7 @@
     "@vitejs/plugin-react": "^6.0.4",
     "gh-pages": "^6.3.0",
     "oxlint": "^1.75.0",
+    "tsx": "^4.23.13",
     "typescript": "~6.0.2",
     "vite": "^8.2.0"
   }

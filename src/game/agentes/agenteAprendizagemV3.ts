@@ -81,6 +81,9 @@ export class AgenteAprendizagemV3 {
     this.print('='.repeat(40));
     this.print('🧬 Iniciando Agente de Aprendizagem V3');
     this.print(`📐 Ambiente: ${ambiente.tamanho}x${ambiente.tamanho}`);
+    this.print(`  Quantidade de Poços: ${ambiente.matriz.flat().filter(c => c.poco).length}`);
+    this.print(`  Quantidade de Wumpus: ${ambiente.matriz.flat().filter(c => c.wumpus).length}`);
+
     this.print('='.repeat(40));
     this.print(`📊 População: ${this.tamanhoPopulacao}`);
     this.print(`🔄 Gerações: ${this.numeroGeracoes}`);

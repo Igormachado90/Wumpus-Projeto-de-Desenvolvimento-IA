@@ -14,11 +14,9 @@ Uso:
     python gerar_graficos.py dados/validacao.csv --saida ../graficos
 
 Com fitness:
-    python gerar_graficos.py dados/validacao.csv \
-        --fitness dados/fitness_v3.csv \
-        --saida ../graficos
+    python gerar_graficos.py dados/validacao.csv --fitness dados/fitness_v3_1.csv --saida ../graficos
 
-Formato esperado de fitness_v3.csv:
+Formato esperado de fitness_v3_1.csv:
     geracao,melhor,media,pior
     1,0.12,0.08,0.03
     2,0.15,0.10,0.04

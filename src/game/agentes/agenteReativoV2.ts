@@ -14,7 +14,8 @@ export interface ResultadoSimulacao {
 
 const MAX_ITERACOES = 2000;
 const MAX_TENTATIVAS_PEGAR_OURO = 200;
-const MAX_PASSOS_COM_OURO = 50; // 🔧 NOVO: Limite de passos com ouro
+// Valor baseado no tamanho máximo possível (20x20)
+const MAX_PASSOS_COM_OURO = 1600; // 20 * 20 * 4 (fator de segurança)
 
 export class AgenteReativoV2 {
   linha: number = 0;
@@ -49,7 +50,9 @@ export class AgenteReativoV2 {
     this.inicializar(ambiente);
     this.print('🧠 Iniciando Agente Reativo V2 (com memória)...');
     this.print(`📐 Ambiente: ${ambiente.tamanho}x${ambiente.tamanho}`);
-    this.print('');
+    this.print(`  Quantidade de Poços: ${ambiente.matriz.flat().filter(c => c.poco).length}`);
+    this.print(`  Quantidade de Wumpus: ${ambiente.matriz.flat().filter(c => c.wumpus).length}`);
+    this.print('\n');
 
     while (this.vivo && !this.venceu) {
       this.passos++;
@@ -227,26 +230,26 @@ export class AgenteReativoV2 {
   }
 
   // 3. Melhorar atualização de memória com grito
-private atualizarMemoria(percepcao: Percepcao, ambiente: Ambiente): void {
-  this.memoria.marcarVisitado(this.linha, this.coluna);
-  
-  if (!percepcao.brisa) {
-    this.memoria.sinalizarSemPoco(this.linha, this.coluna);
+  private atualizarMemoria(percepcao: Percepcao, ambiente: Ambiente): void {
+    this.memoria.marcarVisitado(this.linha, this.coluna);
+
+    if (!percepcao.brisa) {
+      this.memoria.sinalizarSemPoco(this.linha, this.coluna);
+    }
+
+    // Se o Wumpus está morto (grito), remove todas as suspeitas
+    if (percepcao.grito || this.matouWumpus) {
+      this.removerFedor(ambiente);
+    }
+
+    if (!percepcao.fedor && !this.matouWumpus) {
+      this.memoria.sinalizarSemWumpus(this.linha, this.coluna);
+    }
+
+    if (percepcao.brilho) {
+      this.memoria.marcarPossivelOuro(this.linha, this.coluna);
+    }
   }
-  
-  // Se o Wumpus está morto (grito), remove todas as suspeitas
-  if (percepcao.grito || this.matouWumpus) {
-    this.removerFedor(ambiente);
-  }
-  
-  if (!percepcao.fedor && !this.matouWumpus) {
-    this.memoria.sinalizarSemWumpus(this.linha, this.coluna);
-  }
-  
-  if (percepcao.brilho) {
-    this.memoria.marcarPossivelOuro(this.linha, this.coluna);
-  }
-}
 
   private vizinhos(): [number, number][] {
     return [
@@ -263,34 +266,74 @@ private atualizarMemoria(percepcao: Percepcao, ambiente: Ambiente): void {
   private aplicarInferencia(ambiente: Ambiente, percepcao: Percepcao): void {
     const vizinhos = this.vizinhos();
 
+    // Registra o que a casa atual (já visitada) sentiu, para a eliminação
+    // lógica abaixo poder usar essa informação depois.
+    this.memoria.registrarPercepcaoCasa(this.linha, this.coluna, percepcao.brisa, percepcao.fedor);
+
+    // MARCAÇÃO INICIAL (apenas SUSPEITA — ver correção em marcarPossivelPoco)
     for (const [l, c] of vizinhos) {
       if (!ambiente.dentro(l, c)) continue;
 
-      // Regra 1: Brisa indica poço nas adjacências
-      if (!percepcao.brisa) {
-        // Se não tem brisa, o vizinho NÃO tem poço
-        this.memoria.sinalizarSemPoco(l, c);
-      } else if (!this.memoria.isVisitado(l, c)) {
-        // Se tem brisa, o vizinho não visitado PODE ter poço
+      // Brisa → possível poço
+      if (percepcao.brisa && !this.memoria.isVisitado(l, c)) {
         this.memoria.marcarPossivelPoco(l, c);
-        ambiente.getCasa(l, c).perigoso = true;
       }
 
-      // Regra 2: Fedor indica Wumpus nas adjacências
-      if (!percepcao.fedor || this.matouWumpus) {
-        // Se não tem fedor (ou Wumpus já morreu), o vizinho NÃO tem Wumpus
-        this.memoria.sinalizarSemWumpus(l, c);
-      } else if (!this.memoria.isVisitado(l, c)) {
-        // Se tem fedor, o vizinho PODE ter Wumpus
+      // Fedor → possível Wumpus
+      if (percepcao.fedor && !this.memoria.isVisitado(l, c)) {
         this.memoria.marcarPossivelWumpus(l, c);
-        ambiente.getCasa(l, c).perigoso = true;
       }
 
-      // 🔧 Marca como seguro no ambiente se a memória confirmar
-      if (this.memoria.isSeguro(l, c)) {
-        ambiente.getCasa(l, c).seguro = true;
+      // Sem brisa → SEM poço (SEGURANÇA)
+      if (!percepcao.brisa) {
+        this.memoria.sinalizarSemPoco(l, c);
+      }
+      if (!percepcao.fedor) {
+        this.memoria.sinalizarSemWumpus(l, c);
       }
     }
+
+    // 🐛 CORREÇÃO: o bloco antigo aqui não fazia eliminação lógica de
+    // verdade — ele só re-marcava como "possível" um vizinho que já era
+    // suspeito, sem nunca confirmar nada, e nem olhava se a própria casa
+    // (i,j) tinha sentido brisa/fedor. Isso fazia toda suspeita ficar
+    // paralisada como "perigosa" para sempre (ver bug em isPerigoso),
+    // forçando o agente a chutar (50/50) toda vez que 2+ vizinhos ficavam
+    // sob suspeita simultânea — mesmo quando dava para deduzir com certeza
+    // qual dos dois era o perigo real.
+    //
+    // ELIMINAÇÃO REAL: para cada casa já visitada que sentiu brisa (ou
+    // fedor), se sobrar exatamente 1 vizinho ainda não confirmado como
+    // seguro, esse vizinho TEM que ser a fonte do perigo — vira perigo
+    // CONFIRMADO, não mais só suspeita.
+    for (let i = 0; i < ambiente.tamanho; i++) {
+      for (let j = 0; j < ambiente.tamanho; j++) {
+        if (!this.memoria.isVisitado(i, j)) continue;
+
+        const viz = this.vizinhosDe(i, j).filter(([l, c]) => ambiente.dentro(l, c));
+        if (viz.length === 0) continue;
+
+        const naoSeguros = viz.filter(([l, c]) => !this.memoria.isSeguro(l, c));
+
+        if (naoSeguros.length === 1) {
+          const [pl, pc] = naoSeguros[0];
+          // Só confirma poço se esta casa teve brisa; só confirma Wumpus
+          // se teve fedor. Se teve as duas e sobrou só 1 vizinho, ele
+          // concentra os dois perigos possíveis — confirmamos do mesmo jeito
+          // (é perigoso de qualquer forma, o agente deve evitá-lo).
+          this.memoria.marcarPerigosoConfirmado(pl, pc);
+        }
+      }
+    }
+  }
+
+  private vizinhosDe(linha: number, coluna: number): [number, number][] {
+    return [
+      [linha - 1, coluna],
+      [linha + 1, coluna],
+      [linha, coluna - 1],
+      [linha, coluna + 1],
+    ];
   }
 
   /**
@@ -351,19 +394,34 @@ private atualizarMemoria(percepcao: Percepcao, ambiente: Ambiente): void {
     }
 
     // 🔧 PRIORIDADE 2: Casas não perigosas não visitadas (com cautela)
+    // 🐛 CORREÇÃO: agora que isPerigoso() só bloqueia perigo CONFIRMADO
+    // (ver correção em memoria.ts), esta prioridade primeiro tenta achar
+    // uma casa SEM NENHUMA suspeita (risco mínimo) e só depois — ainda
+    // dentro da "cautela", antes de virar chute puro na Prioridade 3 —
+    // aceita uma casa meramente suspeita (não confirmada), preferindo a
+    // que tiver MENOS sinais de suspeita.
+    let melhorSuspeita: { dir: Direcao; risco: number } | null = null;
     for (const dir of shuffled) {
       const [dl, dc] = Movimento.delta[dir];
       const nl = this.linha + dl;
       const nc = this.coluna + dc;
-      if (ambiente.dentro(nl, nc) &&
-        !this.memoria.isVisitado(nl, nc) &&
-        !this.memoria.isPerigoso(nl, nc)) {
-        // 🔧 Verifica se não tem muitos vizinhos perigosos
-        const perigosVizinhos = this.contarVizinhosPerigosos(nl, nc, ambiente);
-        if (perigosVizinhos <= 1) {
-          return dir;
-        }
+      if (!ambiente.dentro(nl, nc) || this.memoria.isVisitado(nl, nc) || this.memoria.isPerigoso(nl, nc)) {
+        continue;
       }
+      const perigosVizinhos = this.contarVizinhosPerigosos(nl, nc, ambiente);
+      if (perigosVizinhos > 1) continue;
+
+      if (!this.memoria.isSuspeito(nl, nc)) {
+        // Sem nenhuma suspeita: melhor opção possível, retorna direto.
+        return dir;
+      }
+      const risco = this.memoria.contarSuspeitas(nl, nc);
+      if (!melhorSuspeita || risco < melhorSuspeita.risco) {
+        melhorSuspeita = { dir, risco };
+      }
+    }
+    if (melhorSuspeita) {
+      return melhorSuspeita.dir;
     }
 
     // 🔧 PRIORIDADE 3: Qualquer casa não visitada (arrisca entrar em território
@@ -529,22 +587,91 @@ private atualizarMemoria(percepcao: Percepcao, ambiente: Ambiente): void {
 
   private removerFedor(ambiente: Ambiente): void {
     for (let i = 0; i < ambiente.tamanho; i++) {
-      for (let j = 0; j < ambiente.tamanho; j++) {
-        ambiente.getCasa(i, j).fedor = false;
-        ambiente.getCasa(i, j).perigoso = false;
-        if (this.memoria.dentro(i, j)) {
-          this.memoria.sinalizarSemWumpus(i, j);
+        for (let j = 0; j < ambiente.tamanho; j++) {
+            ambiente.getCasa(i, j).fedor = false;
+            ambiente.getCasa(i, j).perigoso = false;
+            if (this.memoria.dentro(i, j)) {
+                // Limpa TODAS as suspeitas
+                this.memoria.sinalizarSemWumpus(i, j);
+                this.memoria.limparSuspeitaPoco(i, j);
+                this.memoria.marcarSeguro(i, j); // Marca como seguro
+            }
         }
-      }
     }
+    // 🔧 NOVO: Remove todas as suspeitas de Wumpus da memória
+    this.memoria.limparPerigos();
     this.print('🧹 Fedor removido do ambiente!');
   }
 
   private voltarParaOrigem(ambiente: Ambiente): boolean {
-    const preferencia: Direcao[] = ['norte', 'oeste', 'sul', 'leste'];
+    // Usa BFS para encontrar o caminho mais curto até (0,0)
+    const caminho = this.encontrarCaminhoBFS(ambiente, 0, 0, false);
 
-    // Tenta voltar por caminho seguro
-    for (const dir of preferencia) {
+    if (caminho.length === 0) {
+      return this.voltarParaOrigemForcado(ambiente);
+    }
+
+    // Executa o primeiro passo do caminho
+    const proximoPasso = caminho[0];
+    this.mover(proximoPasso, ambiente);
+    this.memoria.marcarVisitado(this.linha, this.coluna);
+    return true;
+  }
+
+  private encontrarCaminhoBFS(
+    ambiente: Ambiente,
+    destinoL: number,
+    destinoC: number,
+    permitirPerigosas: boolean = false
+  ): Direcao[] {
+    const visitado = new Set<string>();
+    const fila: { linha: number; coluna: number; caminho: Direcao[] }[] = [];
+
+    visitado.add(`${this.linha},${this.coluna}`);
+    fila.push({ linha: this.linha, coluna: this.coluna, caminho: [] });
+
+    while (fila.length > 0) {
+      const atual = fila.shift()!;
+
+      if (atual.linha === destinoL && atual.coluna === destinoC) {
+        return atual.caminho;
+      }
+
+      for (const dir of Movimento.todas()) {
+        const [dl, dc] = Movimento.delta[dir];
+        const nl = atual.linha + dl;
+        const nc = atual.coluna + dc;
+        const chave = `${nl},${nc}`;
+
+        if (ambiente.dentro(nl, nc) && !visitado.has(chave)) {
+          const ehSeguro = this.memoria.isSeguro(nl, nc);
+          const ehPerigoso = this.memoria.isPerigoso(nl, nc);
+
+          // 🔧 CORREÇÃO: Permite casas perigosas se permitirPerigosas = true
+          if (ehSeguro || (permitirPerigosas && !ehPerigoso)) {
+            visitado.add(chave);
+            const novoCaminho = [...atual.caminho, dir];
+            fila.push({ linha: nl, coluna: nc, caminho: novoCaminho });
+          }
+        }
+      }
+    }
+
+    return [];
+  }
+
+  /**
+   * 🔧 NOVO: Força volta para origem (último recurso)
+   */
+  private voltarParaOrigemForcado(ambiente: Ambiente): boolean {
+    // Prioriza movimento em direção à origem
+    const movimentos: Direcao[] = [];
+    if (this.linha > 0) movimentos.push('norte');
+    if (this.coluna > 0) movimentos.push('oeste');
+    if (this.linha < ambiente.tamanho - 1) movimentos.push('sul');
+    if (this.coluna < ambiente.tamanho - 1) movimentos.push('leste');
+
+    for (const dir of movimentos) {
       const [dl, dc] = Movimento.delta[dir];
       const nl = this.linha + dl;
       const nc = this.coluna + dc;
@@ -555,46 +682,20 @@ private atualizarMemoria(percepcao: Percepcao, ambiente: Ambiente): void {
       }
     }
 
-    // Força movimento em direção à origem
-    return this.voltarParaOrigemForcado(ambiente);
-  }
-
-  /**
-   * 🔧 NOVO: Força volta para origem (último recurso)
-   */
-  private voltarParaOrigemForcado(ambiente: Ambiente): boolean {
-  // Prioriza movimento em direção à origem
-  const movimentos: Direcao[] = [];
-  if (this.linha > 0) movimentos.push('norte');
-  if (this.coluna > 0) movimentos.push('oeste');
-  if (this.linha < ambiente.tamanho - 1) movimentos.push('sul');
-  if (this.coluna < ambiente.tamanho - 1) movimentos.push('leste');
-
-  for (const dir of movimentos) {
-    const [dl, dc] = Movimento.delta[dir];
-    const nl = this.linha + dl;
-    const nc = this.coluna + dc;
-    if (ambiente.dentro(nl, nc) && this.memoria.isSeguro(nl, nc)) {
-      this.mover(dir, ambiente);
-      this.memoria.marcarVisitado(this.linha, this.coluna);
-      return true;
+    // Último recurso: qualquer movimento válido
+    for (const dir of Movimento.todas()) {
+      const [dl, dc] = Movimento.delta[dir];
+      const nl = this.linha + dl;
+      const nc = this.coluna + dc;
+      if (ambiente.dentro(nl, nc)) {
+        this.mover(dir, ambiente);
+        this.memoria.marcarVisitado(this.linha, this.coluna);
+        return true;
+      }
     }
-  }
 
-  // Último recurso: qualquer movimento válido
-  for (const dir of Movimento.todas()) {
-    const [dl, dc] = Movimento.delta[dir];
-    const nl = this.linha + dl;
-    const nc = this.coluna + dc;
-    if (ambiente.dentro(nl, nc)) {
-      this.mover(dir, ambiente);
-      this.memoria.marcarVisitado(this.linha, this.coluna);
-      return true;
-    }
+    return false;
   }
-
-  return false;
-}
 
   private verificarMorte(ambiente: Ambiente): void {
     const casa = ambiente.getCasa(this.linha, this.coluna);

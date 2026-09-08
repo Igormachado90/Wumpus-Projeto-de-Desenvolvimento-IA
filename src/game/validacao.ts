@@ -73,8 +73,25 @@ export interface ResultadoValidacao {
 // FUNÇÕES AUXILIARES
 // ============================================================
 
+/**
+ * 🐛 CORREÇÃO: a fórmula antiga usava 15% da ÁREA fixo para qualquer
+ * tamanho (n² × 0.15). Como o caminho necessário para alcançar o ouro e
+ * voltar também cresce com n, o risco ACUMULADO ao longo do percurso
+ * cresce de forma aproximadamente exponencial com o tamanho do tabuleiro
+ * — por isso 10×10 pra cima ficava praticamente impossível de vencer para
+ * qualquer agente, por mais inteligente que fosse.
+ *
+ * Nova fórmula: calibra a densidade por casa (p) para que a probabilidade
+ * de sobreviver a um percurso de ida-e-volta de tamanho mínimo (~2×tamanho
+ * passos) permaneça igual (~35%) não importa o tamanho do tabuleiro. Isso
+ * mantém a dificuldade comparável entre 4×4 e 20×20, em vez de explodir.
+ */
 function pocosParaTamanho(tamanho: number): number {
-  return Math.min(Math.max(Math.trunc(tamanho * tamanho * 0.15), 1), tamanho * tamanho - 3);
+  const SOBREVIVENCIA_ALVO = 0.35;
+  const distanciaMinima = Math.max(2 * tamanho, 1);
+  const densidadePorCasa = 1 - Math.pow(SOBREVIVENCIA_ALVO, 1 / distanciaMinima);
+  const pocos = Math.round(tamanho * tamanho * densidadePorCasa);
+  return Math.min(Math.max(pocos, 1), tamanho * tamanho - 3);
 }
 
 /** Gerador de números pseudo-aleatórios determinístico (LCG), usado para
@@ -233,15 +250,18 @@ export async function rodarValidacao(
 
   const ceder = () => new Promise((resolve) => setTimeout(resolve, 0));
 
-  // Armazena ambientes gerados para cada tamanho (reutilizados)
-  const ambientesCache = new Map<number, Ambiente>();
-
   for (const tamanho of config.tamanhos) {
-    // Gera um ambiente fixo para cada tamanho
-    const ambienteFixo = gerarAmbienteFixo(tamanho, tamanho);
-    ambientesCache.set(tamanho, ambienteFixo);
-
     for (let execucao = 1; execucao <= config.execucoes; execucao++) {
+      // 🐛 CORREÇÃO: antes, um ÚNICO mapa fixo (semente = tamanho) era
+      // reaproveitado nas 30 execuções inteiras. Isso significa que a
+      // "taxa de vitória" de cada tamanho refletia o resultado em UM ÚNICO
+      // mapa (com sorte/azar próprios daquele layout), não uma média
+      // estatística sobre mapas diferentes. Agora cada execução gera um
+      // mapa novo (semente = tamanho*100000 + execucao), mas os 3 agentes
+      // (V1/V2/V3) ainda enfrentam o MESMO mapa dentro da mesma execução,
+      // preservando a comparação justa entre eles.
+      const ambienteFixo = gerarAmbienteFixo(tamanho, tamanho * 100000 + execucao);
+
       if (sinalCancelado?.()) {
         return { 
           config, 
@@ -405,6 +425,18 @@ export function curvaMediaV3PorTamanho(
   const numGeracoes = Math.max(...doTamanho.map((c) => c.historicoMelhor.length));
   const resultado: { geracao: number; melhor: number; pior: number; media: number }[] = [];
 
+  // 🐛 CORREÇÃO: antes, quando uma execução já tinha PARADO (array mais
+  // curto que outra — o que agora é normal, já que o AG para
+  // antecipadamente ao convergir), ela era simplesmente EXCLUÍDA da média
+  // dali em diante em vez de continuar contribuindo com seu último valor
+  // (já convergido). Isso fazia a média cair em degraus conforme as
+  // execuções que convergiram rápido (boas) iam "saindo" da conta,
+  // sobrando cada vez mais só as execuções lentas/ruins — dando a
+  // impressão de que o fitness piorava com o tempo, quando na verdade
+  // cada execução individual nunca piora (o elitismo garante isso).
+  // Agora, cada execução repete (forward-fill) seu último valor conhecido
+  // depois de ter convergido, então ela continua representada
+  // corretamente até o fim do gráfico.
   for (let g = 0; g < numGeracoes; g++) {
     let somaMelhor = 0;
     let somaPior = 0;
@@ -412,12 +444,12 @@ export function curvaMediaV3PorTamanho(
     let n = 0;
     
     for (const c of doTamanho) {
-      if (g < c.historicoMelhor.length) {
-        somaMelhor += c.historicoMelhor[g] || 0;
-        somaPior += c.historicoPior[g] || 0;
-        somaMedia += c.historicoMedia[g] || 0;
+      if (c.historicoMelhor.length === 0) continue;
+      const idx = Math.min(g, c.historicoMelhor.length - 1);
+        somaMelhor += c.historicoMelhor[idx] || 0;
+        somaPior += c.historicoPior[idx] || 0;
+        somaMedia += c.historicoMedia[idx] || 0;
         n++;
-      }
     }
     
     if (n > 0) {

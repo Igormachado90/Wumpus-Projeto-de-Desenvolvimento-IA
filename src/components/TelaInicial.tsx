@@ -64,7 +64,7 @@ export function TelaInicial({ jogo }: Props) {
           <h1>Configurações</h1>
           <label className="config-label" htmlFor="tamanho-ambiente">Tamanho do ambiente</label>
           <div className="tamanho-opcoes" id="tamanho-ambiente">
-            {[4, 5, 6, 7, 8, 10].map((tamanho) => (
+            {[4, 5, 6, 7, 8, 10, 15, 20].map((tamanho) => (
               <button
                 key={tamanho}
                 className={`tamanho-btn${jogo.tamanho === tamanho ? ' selecionado' : ''}`}

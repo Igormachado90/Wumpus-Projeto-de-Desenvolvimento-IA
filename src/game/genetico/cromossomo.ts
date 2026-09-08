@@ -1,18 +1,18 @@
-// src/game/genetico/cromossomo.ts (correções)
-
 import type { Direcao } from '../movimento';
 import { DIRECOES, NOME, type DirecaoCurta } from '../movimento';
+
+export type Gene = Direcao | 'pegar_ouro';
 
 function direcaoAleatoriaRaw(): Direcao {
   return DIRECOES[Math.floor(Math.random() * 4)];
 }
 
 export class Cromossomo {
-  genes: Direcao[];
+  genes: Gene[];
   fitness = 0.0;
   id?: string; // Para identificação
 
-  constructor(genes: Direcao[]) {
+  constructor(genes: Gene[]) {
     this.genes = genes;
     this.id = this.gerarId();
   }
@@ -23,37 +23,45 @@ export class Cromossomo {
   }
 
   static aleatorio(tamanho: number): Cromossomo {
-    const genes: Direcao[] = [];
+    const genes: Gene[] = [];
     for (let i = 0; i < tamanho; i++) {
-      genes.push(direcaoAleatoriaRaw());
+      // 🔧 5% de chance de ser 'pegar_ouro'
+      if (Math.random() < 0.05) {
+        genes.push('pegar_ouro');
+      } else {
+        genes.push(DIRECOES[Math.floor(Math.random() * 4)]);
+      }
     }
     return new Cromossomo(genes);
   }
 
   // Novo: gera cromossomo com distribuição balanceada
   static aleatorioBalanceado(tamanho: number): Cromossomo {
-    const genes: Direcao[] = [];
+    const genes: Gene[] = [];
     const direcoes = [...DIRECOES];
-    
+
     // Distribui direções uniformemente
     for (let i = 0; i < tamanho; i++) {
-      const dir = direcoes[i % 4];
-      genes.push(dir);
+      if (i > tamanho * 0.3 && i < tamanho * 0.7 && Math.random() < 0.1) {
+        genes.push('pegar_ouro');
+      } else {
+        genes.push(direcoes[i % 4]);
+      }
     }
-    
+
     // Embaralha para evitar padrões
     for (let i = genes.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [genes[i], genes[j]] = [genes[j], genes[i]];
     }
-    
+
     return new Cromossomo(genes);
   }
 
   /** Cruzamento por Ponto Único */
   static cruzar(pai1: Cromossomo, pai2: Cromossomo): Cromossomo {
     const ponto = Math.floor(Math.random() * pai1.genes.length);
-    const genes: Direcao[] = [];
+    const genes: Gene[] = [];
     for (let i = 0; i < pai1.genes.length; i++) {
       genes.push(i < ponto ? pai1.genes[i] : pai2.genes[i]);
     }
@@ -65,12 +73,12 @@ export class Cromossomo {
     const tamanho = pai1.genes.length;
     let ponto1 = Math.floor(Math.random() * tamanho);
     let ponto2 = Math.floor(Math.random() * tamanho);
-    
+
     if (ponto1 > ponto2) {
       [ponto1, ponto2] = [ponto2, ponto1];
     }
-    
-    const genes: Direcao[] = [];
+
+    const genes: Gene[] = [];
     for (let i = 0; i < tamanho; i++) {
       if (i >= ponto1 && i <= ponto2) {
         genes.push(pai2.genes[i]);
@@ -92,8 +100,8 @@ export class Cromossomo {
     }
 
     // Inicializa filho com genes do pai1
-    const filho: Direcao[] = [...pai1.genes];
-    
+    const filho: Gene[] = [...pai1.genes];
+
     // Mapeamento: gene do pai1 -> gene do pai2
     const mapeamento = new Map<string, string>();
     for (let i = ponto1; i <= ponto2; i++) {
@@ -112,15 +120,15 @@ export class Cromossomo {
     // Corrige genes fora da seção que podem ter conflito
     for (let i = 0; i < tamanho; i++) {
       if (i >= ponto1 && i <= ponto2) continue;
-      
+
       let gene = pai1.genes[i];
       let conflito = true;
       let seguranca = 0;
-      
+
       while (conflito && seguranca < 100) {
         seguranca++;
         conflito = false;
-        
+
         // Verifica se gene aparece na seção de mapeamento
         for (let j = ponto1; j <= ponto2; j++) {
           if (filho[j] === gene) {
@@ -134,7 +142,7 @@ export class Cromossomo {
           }
         }
       }
-      
+
       filho[i] = gene;
     }
 
@@ -188,6 +196,8 @@ export class Cromossomo {
   /** Retorna genes como array de direções curtas (para compatibilidade) */
   getGenesCurtos(): DirecaoCurta[] {
     return this.genes.map(g => {
+      if (g === 'pegar_ouro') return 'O';
+
       const map: Record<Direcao, DirecaoCurta> = {
         norte: 'N',
         sul: 'S',
@@ -199,6 +209,8 @@ export class Cromossomo {
   }
 
   toString(): string {
-    return this.genes.map((d) => NOME[d][0]).join(' → ');
+    return this.genes
+      .map((d) => d === 'pegar_ouro' ? 'O' : NOME[d][0])
+      .join(' → ');
   }
 }

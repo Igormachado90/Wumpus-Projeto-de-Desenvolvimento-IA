@@ -100,7 +100,7 @@ export function Validacao({ aoVoltar }: Props) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `validacao${Date.now()}.csv`;
+    a.download = `validacao.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -112,7 +112,7 @@ export function Validacao({ aoVoltar }: Props) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `fitness-medio${Date.now()}.csv`;
+    a.download = `fitness_v3.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }

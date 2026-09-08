@@ -34,6 +34,21 @@ function avaliarVersao1(cromossomo: Cromossomo, ambiente: Ambiente): number {
     }
     if (passos > 500) break;
 
+    // 🐛 CORREÇÃO CRÍTICA: gene 'pegar_ouro' não é uma direção de movimento.
+    // Antes disso, `DELTA[direcao]` retornava `undefined` para esse gene e a
+    // desestruturação `[dl, dc] = undefined` lançava uma exceção, abortando
+    // TODO o treinamento do AG (silenciosamente capturada lá em cima no
+    // agenteAprendizagemV3, que caía no caminho heurístico de fallback).
+    if (direcao === 'pegar_ouro') {
+      const casaAtual = sim.getCasa(linha, coluna);
+      if (casaAtual.ouro && !temOuro) {
+        casaAtual.ouro = false;
+        temOuro = true;
+        acertos += 10;
+      }
+      continue;
+    }
+
     const [dl, dc] = DELTA[direcao];
     const novaLinha = linha + dl;
     const novaColuna = coluna + dc;
@@ -98,6 +113,17 @@ function avaliarVersao2(cromossomo: Cromossomo, ambiente: Ambiente): number {
     }
     if (passos > 500) break;
 
+    // 🐛 CORREÇÃO CRÍTICA: ver comentário equivalente em avaliarVersao1.
+    if (direcao === 'pegar_ouro') {
+      const casaAtual = sim.getCasa(linha, coluna);
+      if (casaAtual.ouro && !temOuro) {
+        casaAtual.ouro = false;
+        temOuro = true;
+        acertos += 10;
+      }
+      continue;
+    }
+
     const [dl, dc] = DELTA[direcao];
     const novaLinha = linha + dl;
     const novaColuna = coluna + dc;
@@ -132,16 +158,32 @@ function avaliarVersao2(cromossomo: Cromossomo, ambiente: Ambiente): number {
 
   // Normalização melhorada
   let fitness = acertos / (passosValidos + 1);
-  
+
   if (completou) {
     fitness += 2.0; // Bônus maior por completar
     fitness += Math.min(1.0, 50 / passos); // Bônus por eficiência
   }
-  
+
+  // 🐛 CORREÇÃO: a penalidade de morte era fixa (-5.0), muito maior do que
+  // o valor máximo que "acertos/(passosValidos+1)" pode assumir (~1.0-2.0).
+  // Isso fazia com que TODO indivíduo que morresse fosse achatado (clamp)
+  // em 0.0, apagando qualquer diferença entre "morreu logo de cara" e
+  // "morreu quase chegando no ouro". Sem gradiente, a seleção do AG não
+  // tem como identificar indivíduos melhores em ambientes muito perigosos
+  // (mapas grandes), e o algoritmo trava com fitness=0 travado.
+  // Correção: penalidade de morte bem menor + bônus por ter chegado perto
+  // do ouro antes de morrer, para dar sinal de progresso ao AG.
   if (!vivo) {
-    fitness -= 5.0;
+    const golPos = ambiente.goldPosition;
+    if (golPos) {
+      const distancia = Math.abs(linha - golPos[0]) + Math.abs(coluna - golPos[1]);
+      const distanciaMaxima = 2 * (ambiente.tamanho - 1) || 1;
+      const proximidade = 1 - Math.min(1, distancia / distanciaMaxima);
+      fitness += proximidade * 0.5; // quanto mais perto do ouro, menos "ruim" foi morrer
+    }
+    fitness -= 0.5;
   }
-  
+
   // Penalidade por muitos passos
   if (passos > 300) {
     fitness -= (passos - 300) / 100;
@@ -167,6 +209,17 @@ function avaliarVersao3(cromossomo: Cromossomo, ambiente: Ambiente): number {
 
     passos++;
     pontuacao -= 1;
+
+    // 🐛 CORREÇÃO CRÍTICA: ver comentário equivalente em avaliarVersao1.
+    if (direcao === 'pegar_ouro') {
+      const casaAtual = sim.getCasa(linha, coluna);
+      if (casaAtual.ouro && !temOuro) {
+        casaAtual.ouro = false;
+        temOuro = true;
+        pontuacao += 1000;
+      }
+      continue;
+    }
 
     const [dl, dc] = DELTA[direcao];
     const novaLinha = linha + dl;
@@ -224,6 +277,8 @@ function avaliarVersao4(cromossomo: Cromossomo, ambiente: Ambiente): number {
   let linha = 0;
   let coluna = 0;
   for (const direcao of cromossomo.genes) {
+    // 🐛 CORREÇÃO CRÍTICA: ver comentário equivalente em avaliarVersao1.
+    if (direcao === 'pegar_ouro') continue;
     const [dl, dc] = DELTA[direcao];
     const novaLinha = linha + dl;
     const novaColuna = coluna + dc;
